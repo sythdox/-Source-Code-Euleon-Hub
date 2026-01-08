@@ -15,3 +15,10 @@ Make OOP / class files the way which is shown in the codebase.
 A majority of the code will be very clean.
 
 Some code will be especially ugly. The modules are there for rapid development. So, they are extremely smelly. A lot of mistakes were done during development.
+
+# Features
+- CoreGui Placement for no gui detection
+- claim hive
+- Auto tool
+- Auto Convert
+- anti-afk (comming)
