@@ -8,41 +8,49 @@ local LocalPlayer = Players.LocalPlayer
 local PlayerHiveCommand = ReplicatedStorage.Events.PlayerHiveCommand
 local Tween = require("Utility/Tween")
 
+local function getPollenPercentage()
+    local coreStats = LocalPlayer:FindFirstChild("CoreStats")
+    if not coreStats then return 0 end
+    
+    local pollen = coreStats:FindFirstChild("Pollen")
+    local capacity = coreStats:FindFirstChild("Capacity")
+    
+    if pollen and capacity and capacity.Value > 0 then
+        return (pollen.Value / capacity.Value) * 100
+    end
+    return 0
+end
+
 function AutoConvert:Start(thresholdPercent)
     if self.running then return end
     
     self.running = true
     self.threshold = thresholdPercent or 90
     
+    
+    self:CheckAndConvert()
+    
     while self.running do
         task.wait(1)
-        
-        local coreStats = LocalPlayer:FindFirstChild("CoreStats")
-        if not coreStats then
-            
-        else
-            local pollen = coreStats:FindFirstChild("Pollen")
-            local capacity = coreStats:FindFirstChild("Capacity")
-            
-            if pollen and capacity and capacity.Value > 0 then
-                local percentage = (pollen.Value / capacity.Value) * 100
-                
-                if percentage >= self.threshold then
-                    local success, err = pcall(function()
-                        self:ConvertAtHive()
-                    end)
-                    
-                    if not success then
-                        warn("[AutoConvert] Error:", err)
-                    end
-                end
-            end
-        end
+        self:CheckAndConvert()
     end
 end
 
 function AutoConvert:Stop()
     self.running = false
+end
+
+function AutoConvert:CheckAndConvert()
+    local percentage = getPollenPercentage()
+    if percentage >= self.threshold then
+        local success, err = pcall(function()
+            self:ConvertAtHive()
+        end)
+        
+        if not success then
+            warn("[AutoConvert] Error:", err)
+        end
+    end
 end
 
 function AutoConvert:ConvertAtHive()
@@ -97,6 +105,11 @@ end
 
 function AutoConvert:SetThreshold(percent)
     self.threshold = math.clamp(percent, 50, 100)
+    
+   
+    if self.running then
+        self:CheckAndConvert()
+    end
 end
 
 return AutoConvert
